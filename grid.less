@@ -1,0 +1,159 @@
+//----------------------------------------------//
+//
+//   Responsive Grid
+//
+//----------------------------------------------//
+
+
+//-------------- Variables ---------------------//
+
+// Note: grid-breakpoints keys and container-max-widths keys are both used by media-breakpoint function.
+// please keep the keys in sync
+@grid-breakpoint-table: {
+  // extra small devices / do not remove
+  xs: 0;
+  // phones
+  sm: 600px;
+  // horizontal width of an iPad
+  md: 1024px;
+  // height of an iPad
+  lg: 1440px;
+  // wide screen
+  //xl: 1200px;
+};
+
+// Containers must be divisible by 16 because fiori 3 system grid is on 16 columns
+@container-max-widths: {
+  sm: 568px;
+  md: 896px;
+  lg: 1184px;
+  //xl: 100%;
+};
+@grid-gutter-width: 16px;
+
+html {
+  box-sizing: border-box;
+  -ms-overflow-style: scrollbar;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+//-------------- Columns ---------------------//
+
+.make-columns(@infix, @columns) {
+  each(range(@columns), {
+    @width: percentage((@value / @columns));
+    .col@{infix}-@{value} {
+      flex: 0 0 @width;
+      max-width: @width;
+    }
+  });
+}
+
+.make-grid-columns-stretch(@infix, @columns) {
+  each(range(@columns), {
+    .col@{infix}-@{value} {
+      &:extend(.grid-column);
+    }
+  });
+}
+
+.strip-infix(@name, @breakpoint) {
+  @result: if((boolean(@breakpoint > 0)), e('-@{name}'));
+}
+
+
+.media-breakpoint(@breakpoints, @breakpoint, @content) {
+  @breakpoint-width: @breakpoints[$@breakpoint];
+  @min-width: if((boolean(@breakpoint-width > 0)), @breakpoint-width);
+  & when not (@min-width = ~"") {
+    @media (min-width: @min-width) {
+      @content();
+    }
+  }
+  & when (@min-width = ~"") {
+    @content();
+  }
+}
+
+.make-grid-columns(@columns, @gutter, @breakpoints) {
+  .grid-column {
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-right: (@gutter / 2);
+    padding-left: (@gutter / 2);
+  };
+  each(@breakpoints, {
+    @infix: .strip-infix(@key, @value)[@result];
+
+    .make-grid-columns-stretch(@infix, @columns);
+
+    .col@{infix},
+    .col@{infix}-auto {
+      &:extend(.grid-column);
+    }
+    .media-breakpoint(@breakpoints, @key, {
+      .col@{infix} {
+        flex-basis: 0;
+        flex-grow: 1;
+        max-width: 100%;
+      }
+      .col@{infix}-auto {
+        flex: 0 0 auto;
+        width: auto;
+        max-width: none;
+      }
+      .make-columns(@infix, @columns);
+    });
+
+  });
+}
+
+//-------------- Container ---------------------//
+
+.make-container(@grid-gutter-width) {
+  width: 100%;
+  padding-right: (@grid-gutter-width / 2);
+  padding-left: (@grid-gutter-width / 2);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.container-fluid {
+  .make-container(@grid-gutter-width);
+}
+
+.container {
+  .make-container(@grid-gutter-width);
+  each(@container-max-widths, {
+    .media-breakpoint(@grid-breakpoint-table, @key, {
+      max-width: @value;
+    });
+  });
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: (@grid-gutter-width / -2);
+  margin-left: (@grid-gutter-width / -2);
+}
+
+.no-gutters {
+  margin-right: 0;
+  margin-left: 0;
+
+  > .col,
+  > [class*="col-"] {
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
+@grid-columns: 16;
+.make-grid-columns(@grid-columns, @grid-gutter-width, @grid-breakpoint-table);
