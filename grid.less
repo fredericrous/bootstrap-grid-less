@@ -109,10 +109,20 @@ html {
         max-width: none;
       }
       .make-columns(@infix, @columns);
+
+      .d@{infix}-none         { display: none !important; }
+      .d@{infix}-block        { display: block !important; }
     });
 
   });
 }
+
+.align-baseline    { vertical-align: baseline !important; }
+.align-top         { vertical-align: top !important; }
+.align-middle      { vertical-align: middle !important; }
+.align-bottom      { vertical-align: bottom !important; }
+.align-text-bottom { vertical-align: text-bottom !important; }
+.align-text-top    { vertical-align: text-top !important; }
 
 //-------------- Container ---------------------//
 
